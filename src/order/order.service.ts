@@ -54,7 +54,6 @@ export class OrderService {
     return orders.reduce(
       (acc, order) => {
         if (this.isRussianPickupOrder(order)) {
-          console.log(order);
           return {
             sum: acc.sum + Number(order.Цена) / COPECKS_IN_RUBLE,
             count: acc.count + INCREMENT,
