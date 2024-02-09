@@ -6,12 +6,12 @@ import { OrderService } from 'src/order/order.service';
 import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [HttpModule],
-  providers: [
-    ProcessingService,
-    HttpCommunicationService,
-    CsvService,
-    OrderService,
-  ],
+	imports: [HttpModule],
+	providers: [
+		ProcessingService,
+		HttpCommunicationService,
+		CsvService,
+		OrderService
+	]
 })
 export class ProcessingModule {}

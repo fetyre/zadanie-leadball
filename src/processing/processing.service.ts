@@ -26,88 +26,88 @@ const DECIMAL_COMMA: string = ',';
  */
 @Injectable()
 export class ProcessingService {
-  private readonly logger: Logger = new Logger(ProcessingService.name);
+	private readonly logger: Logger = new Logger(ProcessingService.name);
 
-  constructor(
-    private readonly httpCommunicationService: HttpCommunicationService,
-    private readonly csvService: CsvService,
-    private readonly ordersService: OrderService,
-    private readonly configLoaderService: ConfigLoaderService,
-  ) {}
+	constructor(
+		private readonly httpCommunicationService: HttpCommunicationService,
+		private readonly csvService: CsvService,
+		private readonly ordersService: OrderService,
+		private readonly configLoaderService: ConfigLoaderService
+	) {}
 
-  /**
-   * @description Вычисление средней суммы закана, отправление овтета.
-   * @method getAverage
-   * @async
-   * @public
-   * @throws {Error} - возврат возникшей ошибки.
-   * @see {@link createConfig} создание axios конфигурации
-   * @see {@link HttpCommunicationService.get} get запрос для получения списка заказов
-   * @see {@link CsvService.parse}
-   * @see {@link OrderService.calculateAverage} вычисление средней суммы заказа.
-   * @see {@link sendResult} отправелние средней суммы
-   * @returns {Promise<void>} - ничего
-   */
-  public async getAverage(): Promise<void> {
-    try {
-      this.logger.log('getAverage: Starting process.');
-      const config: AxiosRequestConfig = this.createConfig();
-      const response: AxiosResponse<string> =
-        await this.httpCommunicationService.get(TESTTASK_URL, config);
-      this.logger.debug('getAverage: get req completed.');
-      const orders: IOrder[] = await this.csvService.parse(response);
-      this.logger.debug('getAverage: parse completed.');
-      const average: string = this.ordersService.calculateAverage(orders);
-      this.logger.debug(`getAverage: average amount=${average}.`);
-      await this.sendResult(average, config);
-      this.logger.debug('getAverage: post req completed.');
-    } catch (err) {
-      this.logger.error(`getAverage: Error in process, error:${err.message}.`);
-      throw err;
-    }
-  }
+	/**
+	 * @description Вычисление средней суммы закана, отправление овтета.
+	 * @method getAverage
+	 * @async
+	 * @public
+	 * @throws {Error} - возврат возникшей ошибки.
+	 * @see {@link createConfig} создание axios конфигурации
+	 * @see {@link HttpCommunicationService.get} get запрос для получения списка заказов
+	 * @see {@link CsvService.parse}
+	 * @see {@link OrderService.calculateAverage} вычисление средней суммы заказа.
+	 * @see {@link sendResult} отправелние средней суммы
+	 * @returns {Promise<void>} - ничего
+	 */
+	public async getAverage(): Promise<void> {
+		try {
+			this.logger.log('getAverage: Starting process.');
+			const config: AxiosRequestConfig = this.createConfig();
+			const response: AxiosResponse<string> =
+				await this.httpCommunicationService.get(TESTTASK_URL, config);
+			this.logger.debug('getAverage: get req completed.');
+			const orders: IOrder[] = await this.csvService.parse(response);
+			this.logger.debug('getAverage: parse completed.');
+			const average: string = this.ordersService.calculateAverage(orders);
+			this.logger.debug(`getAverage: average amount=${average}.`);
+			await this.sendResult(average, config);
+			this.logger.debug('getAverage: post req completed.');
+		} catch (err) {
+			this.logger.error(`getAverage: Error in process, error:${err.message}.`);
+			throw err;
+		}
+	}
 
-  /**
-   * @description отпарвление средней суммы на url адрес
-   * @method sendResult
-   * @async
-   * @private
-   * @param {string} average - средняя сумма
-   * @param {AxiosRequestConfig} config - req конфиг
-   * @see {@link HttpCommunicationService.post} post запрос для отпрвление средней суммы заказа
-   * @returns {Promise<void>} ничего
-   */
-  private async sendResult(
-    average: string,
-    config: AxiosRequestConfig,
-  ): Promise<void> {
-    this.logger.log('sendResult: Starting process.');
-    const body: IBody = {
-      average: average.replace(DECIMAL_POINT, DECIMAL_COMMA),
-    };
-    await this.httpCommunicationService.post(TESTTASK_RESULT_URL, body, config);
-  }
+	/**
+	 * @description отпарвление средней суммы на url адрес
+	 * @method sendResult
+	 * @async
+	 * @private
+	 * @param {string} average - средняя сумма
+	 * @param {AxiosRequestConfig} config - req конфиг
+	 * @see {@link HttpCommunicationService.post} post запрос для отпрвление средней суммы заказа
+	 * @returns {Promise<void>} ничего
+	 */
+	private async sendResult(
+		average: string,
+		config: AxiosRequestConfig
+	): Promise<void> {
+		this.logger.log('sendResult: Starting process.');
+		const body: IBody = {
+			average: average.replace(DECIMAL_POINT, DECIMAL_COMMA)
+		};
+		await this.httpCommunicationService.post(TESTTASK_RESULT_URL, body, config);
+	}
 
-  /**
-   * @description создание конфигурации.
-   * @method createConfig
-   * @private
-   * @returns {AxiosRequestConfig} axios конфигурация
-   */
-  private createConfig(): AxiosRequestConfig {
-    this.logger.log('createConfig: Starting process.');
-    const AUTH_HEADER: IAuthHeader = {
-      Authorization:
-        BASIC_AUTH_PREFIX +
-        Buffer.from(
-          this.configLoaderService.authUsername +
-            AUTH_SEPARATOR +
-            this.configLoaderService.authPassword,
-        ).toString(BASE64_ENCODING),
-    };
-    return {
-      headers: AUTH_HEADER,
-      responseType: RESPONSE_TYPE,
-    };
-  }
+	/**
+	 * @description создание конфигурации.
+	 * @method createConfig
+	 * @private
+	 * @returns {AxiosRequestConfig} axios конфигурация
+	 */
+	private createConfig(): AxiosRequestConfig {
+		this.logger.log('createConfig: Starting process.');
+		const AUTH_HEADER: IAuthHeader = {
+			Authorization:
+				BASIC_AUTH_PREFIX +
+				Buffer.from(
+					this.configLoaderService.authUsername +
+						AUTH_SEPARATOR +
+						this.configLoaderService.authPassword
+				).toString(BASE64_ENCODING)
+		};
+		return {
+			headers: AUTH_HEADER,
+			responseType: RESPONSE_TYPE
+		};
+	}
 }
